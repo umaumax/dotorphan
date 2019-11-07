@@ -1,5 +1,7 @@
 # dotorphan
 
+find orphan graph from dot file
+
 ## how to install
 ```
 # for avoiding 'pip Installing collected packages: UNKNOWN'
