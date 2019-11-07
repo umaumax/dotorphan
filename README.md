@@ -9,8 +9,6 @@ pip3 install https://github.com/umaumax/dotorphan/archive/master.tar.gz
 
 ## how to run
 
-![input dot svg]( ./dotorphan/out.svg )
-
 ```
 $ dotorphan sample.dot --exclude n n8 -o out.svg
 # all orphan nodes
@@ -20,6 +18,12 @@ n9
 [('n6', 'n5'), ('n5', 'n6')]
 [('n7', 'n71'), ('n7', 'n72')]
 ```
+
+* `input`
+
+![input dot svg]( ./dotorphan/sample.svg )
+
+* `output` filtered `n` and `n8` nodes
 
 ![ouput dot svg]( ./dotorphan/out.svg )
 
