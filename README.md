@@ -1,12 +1,15 @@
 # dotorphan
 
-find orphan graph from dot file
-
 ## how to install
 ```
 # for avoiding 'pip Installing collected packages: UNKNOWN'
 pip3 install setuptools --upgrade
 pip3 install https://github.com/umaumax/dotorphan/archive/master.tar.gz
+```
+
+for zsh completion
+```
+wget https://raw.githubusercontent.com/umaumax/dotorphan/master/_dotorphan -O /usr/local/share/zsh/site-functions
 ```
 
 ## how to run
