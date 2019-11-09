@@ -9,3 +9,5 @@ void sub_orphan_func2() { sub_orphan_func_call_main(); }
 void sub_orphan_func3() { sub_orphan_func_call_main(); }
 
 void sub_orphan_func_call_main() { hello_main_world(); }
+
+void self_ref_func() { self_ref_func(); }

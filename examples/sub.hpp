@@ -10,4 +10,6 @@ void sub_orphan_func3();
 
 void sub_orphan_func_call_main();
 
+void self_ref_func();
+
 #endif  // SUB_HPP_INCLUDED__

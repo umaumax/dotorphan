@@ -64,6 +64,10 @@ dot -T svg -o main.svg <(cat main.dot | c++filt -n)
 dot -T svg -o all.svg  <(cat  all.dot | c++filt -n)
 ```
 
+## bugs
+* 自己参照をする関数がroot nodeの場合にorphan nodeとして検出できない(orange色でfillされない)
+  * 複数の関数で参照ループを構成している場合も含む
+
 ## FYI
 * [Overview of NetworkX — NetworkX 2\.4 documentation]( https://networkx.github.io/documentation/stable/index.html )
 * [【Python】NetworkX 2\.0の基礎的な使い方まとめ \- Qiita]( https://qiita.com/kzm4269/items/081ff2fdb8a6b0a6112f )
