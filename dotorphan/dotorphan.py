@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -40,6 +41,15 @@ def remove_nodes(graph, node_names, verbose=True):
     return True
 
 
+def remove_traversed_nodes_regex(graph, node_patterns, verbose=True):
+    for node_pattern in node_patterns:
+        matcher = re.compile(node_pattern)
+        for node in list([n for n in graph.nodes() if matcher.search(n)]):
+            print("[remove_traversed_nodes_regex] match {} by '{}' regex pattern".format(node, node_pattern), file=sys.stderr)
+            graph.remove_nodes_from(list(set([element for tuple in list(networkx.edge_bfs(graph, [str(node)])) for element in tuple])))
+    return True
+
+
 def remove_traversed_nodes(graph, node_names, verbose=True):
     for node_name in node_names:
         if graph.has_node(node_name):
@@ -58,7 +68,7 @@ def run(input, output, log_output, args):
     if args.relabel:
         G = networkx.relabel_nodes(G, lambda x: G.node[x]['label'] if 'label' in G.node[x] else x)
 
-    ret = remove_traversed_nodes(G, args.remove_traversed)
+    ret = remove_traversed_nodes_regex(G, args.remove_traversed) if args.regex else remove_traversed_nodes(G, args.remove_traversed)
     if not ret:
         return False
     ret = remove_nodes(G, args.remove)
@@ -105,9 +115,10 @@ def run(input, output, log_output, args):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--demangle', action='store_false', help='demangle c++ symbol')
     parser.add_argument('--relabel', action='store_false', help='relabel node name by label attr')
+    parser.add_argument('--regex', action='store_true', help='enable regex of --remove-traversed')
     parser.add_argument('--gui', action='store_true', help='show graph (requires: pygraphviz)')
     parser.add_argument('--agrpah-prog', default='dot', type=str, help='graph drawing prog (neato, dot, twopi, circo, fdp, nop, wc, acyclic, gvpr, gvcolor, ccomps, sccmap, tred, sfdp, unflatten)')
     parser.add_argument('--remove', default=['"{external node}"'], type=str, nargs='*', help='remove node names')
