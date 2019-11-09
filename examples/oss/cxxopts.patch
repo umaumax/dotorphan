@@ -1,0 +1,31 @@
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 1969545..0199572 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -1,4 +1,8 @@
+ if (CXXOPTS_BUILD_TESTS)
++    set(flto_target_names CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS)
++    foreach(list_name IN LISTS flto_target_names)
++      set(${list_name} "${${list_name}} -flto")
++    endforeach()
+     add_executable(options_test main.cpp options.cpp)
+     target_link_libraries(options_test cxxopts)
+     add_test(options options_test)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index eec97b7..ac94cdc 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -18,7 +18,13 @@
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ # THE SOFTWARE.
+ 
++# include(CheckIPOSupported)
++# check_ipo_supported()
+ if(CXXOPTS_BUILD_EXAMPLES)
++    set(flto_target_names CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS)
++    foreach(list_name IN LISTS flto_target_names)
++      set(${list_name} "${${list_name}} -flto")
++    endforeach()
+     add_executable(example example.cpp)
+     target_link_libraries(example cxxopts)
+ endif()
