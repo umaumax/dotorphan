@@ -26,11 +26,11 @@ n9
 
 * `input`
 
-![input dot svg]( ./dotorphan/sample.svg )
+![input dot svg]( ./examples/sample.svg )
 
 * `output` filtered `n` and `n8` nodes
 
-![ouput dot svg]( ./dotorphan/out.svg )
+![ouput dot svg]( ./examples/out.svg )
 
 ## requires
 ```
@@ -46,6 +46,19 @@ sudo apt-get install -y graphviz libgraphviz-dev
 
 ```
 pip3 install pygraphviz
+```
+
+## examples
+```
+clang++ -emit-llvm main.cpp -c -o main.bc
+clang++ -emit-llvm sub.cpp -c -o sub.bc
+llvm-link main.bc sub.bc -o all.bc
+
+opt -analyze -dot-callgraph main.bc && command mv callgraph.dot main.dot
+opt -analyze -dot-callgraph  all.bc && command mv callgraph.dot  all.dot
+
+dot -T svg -o main.svg <(cat main.dot | c++filt -n)
+dot -T svg -o all.svg  <(cat  all.dot | c++filt -n)
 ```
 
 ## FYI
