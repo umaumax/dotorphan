@@ -15,7 +15,9 @@ def demangle(input_file_object, output_file_object, verbose=True):
                             stdout=output_file_object)
     _, errs = pipe.communicate()
     if errs:
-        print("[log] c++filt demangle failed: {}".format(errs), file=sys.stderr)
+        print(
+            "[log] c++filt demangle failed: {}".format(errs),
+            file=sys.stderr)
         return False
     return True
 
@@ -47,8 +49,10 @@ def remove_traversed_nodes_regex(graph, node_patterns, verbose=True):
     for node_pattern in node_patterns:
         matcher = re.compile(node_pattern)
         for node in list([n for n in graph.nodes() if matcher.search(n)]):
-            print("[remove_traversed_nodes_regex] match {} by '{}' regex pattern".format(
-                node, node_pattern), file=sys.stderr)
+            print(
+                "[remove_traversed_nodes_regex]"
+                " match {} by '{}' regex pattern".format(
+                    node, node_pattern), file=sys.stderr)
             graph.remove_nodes_from(list(set([element for tuple in list(
                 networkx.edge_bfs(graph, [str(node)])) for element in tuple])))
     return True
@@ -61,8 +65,10 @@ def remove_traversed_nodes(graph, node_names, verbose=True):
                 networkx.edge_bfs(graph, [node_name])) for element in tuple])))
         else:
             if verbose:
-                print("[remove_traversed_nodes] not found node name '{}'".format(
-                    node_name), file=sys.stderr)
+                print(
+                    "[remove_traversed_nodes] not found node name '{}'".format(
+                        node_name),
+                    file=sys.stderr)
             return False
     return True
 
@@ -76,7 +82,8 @@ def run(input, output, log_output, args):
             G, lambda x: G.node[x]['label'] if 'label' in G.node[x] else x)
 
     ret = remove_traversed_nodes_regex(
-        G, args.remove_traversed) if args.regex else remove_traversed_nodes(G, args.remove_traversed)
+        G, args.remove_traversed) if args.regex else remove_traversed_nodes(
+        G, args.remove_traversed)
     if not ret:
         return False
     ret = remove_nodes(G, args.remove)
@@ -89,7 +96,8 @@ def run(input, output, log_output, args):
         filtered_graph.add_node(node)
 
     log_output.write('# orphan edges' + '\n')
-    for edges in list([G.edges(component) for component in networkx.connected_components(G.to_undirected()) if len(G.edges(component)) > 0]):
+    for edges in list([G.edges(component) for component in networkx.connected_components(
+            G.to_undirected()) if len(G.edges(component)) > 0]):
         log_output.write(str(edges) + '\n')
         filtered_graph.add_edges_from(edges)
 
@@ -129,25 +137,50 @@ def run(input, output, log_output, args):
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--demangle', action='store_false',
-                        help='demangle c++ symbol')
-    parser.add_argument('--relabel', action='store_false',
-                        help='relabel node name by label attr')
-    parser.add_argument('--regex', action='store_true',
-                        help='enable regex of --remove-traversed')
-    parser.add_argument('--gui', action='store_true',
-                        help='show graph (requires: pygraphviz)')
-    parser.add_argument('--agrpah-prog', default='dot', type=str,
-                        help='graph drawing prog (neato, dot, twopi, circo, fdp, nop, wc, acyclic, gvpr, gvcolor, ccomps, sccmap, tred, sfdp, unflatten)')
+    parser.add_argument('--demangle',
+                        action='store_false', help='demangle c++ symbol')
     parser.add_argument(
-        '--remove', default=['"{external node}"'], type=str, nargs='*', help='remove node names')
-    parser.add_argument('--remove-traversed', default=[
-                        '"{main}"'], type=str, nargs='*', help='remove nodes traversed from these node names')
-    parser.add_argument('-o', '--output', default='', type=str,
-                        help='output filepath (dot, svg, png, pdf, ...)')
-    parser.add_argument('--log-output', default='/dev/stdout',
-                        type=str, help='log output filepath')
-    parser.add_argument('input', type=str, help='input dot file')
+        '--relabel',
+        action='store_false',
+        help='relabel node name by label attr')
+    parser.add_argument(
+        '--regex',
+        action='store_true',
+        help='enable regex of --remove-traversed')
+    parser.add_argument(
+        '--gui',
+        action='store_true',
+        help='show graph (requires: pygraphviz)')
+    parser.add_argument(
+        '--agrpah-prog',
+        default='dot',
+        type=str,
+        help='graph drawing prog (neato, dot, twopi, circo, fdp, nop, wc, acyclic, gvpr, gvcolor, ccomps, sccmap, tred, sfdp, unflatten)')
+    parser.add_argument(
+        '--remove',
+        default=['"{external node}"'],
+        type=str,
+        nargs='*',
+        help='remove node names')
+    parser.add_argument(
+        '--remove-traversed',
+        default=['"{main}"'],
+        type=str,
+        nargs='*',
+        help='remove nodes traversed from these node names')
+    parser.add_argument(
+        '-o',
+        '--output',
+        default='',
+        type=str,
+        help='output filepath (dot, svg, png, pdf, ...)')
+    parser.add_argument(
+        '--log-output',
+        default='/dev/stdout',
+        type=str,
+        help='log output filepath')
+    parser.add_argument('input',
+                        type=str, help='input dot file')
 
     args, extra_args = parser.parse_known_args()
     if len(extra_args) > 0:
@@ -160,12 +193,12 @@ def main():
         if not args.demangle:
             ret = run(args.input, args.output, log_file, args)
         else:
-            with open(args.input, 'r') as input_file:
-                with tempfile.TemporaryFile(mode='w+') as tmp_output_file:
-                    ret = demangle(input_file, tmp_output_file)
-                    if ret:
-                        tmp_output_file.seek(0)
-                        ret = run(tmp_output_file, args.output, log_file, args)
+            with open(args.input, 'r') as input_file, \
+                    tempfile.TemporaryFile(mode='w+') as tmp_output_file:
+                ret = demangle(input_file, tmp_output_file)
+                if ret:
+                    tmp_output_file.seek(0)
+                    ret = run(tmp_output_file, args.output, log_file, args)
     if not ret:
         sys.exit(1)
     return True
