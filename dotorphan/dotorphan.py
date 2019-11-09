@@ -8,6 +8,16 @@ import argparse
 import networkx
 
 
+def demangle(input_file_object, output_file_object, verbose=True):
+    args = ['c++filt', '-n']
+    pipe = subprocess.Popen(args, stdin=input_file_object, stdout=output_file_object)
+    _, errs = pipe.communicate()
+    if errs:
+        print("[log] c++filt demangle failed: {}".format(errs), file=sys.stderr)
+        return False
+    return True
+
+
 def pygraphviz_module_assert():
     import importlib.util
     pygraphviz_spec = importlib.util.find_spec("pygraphviz")
@@ -62,7 +72,6 @@ def run(input, output, log_output, args):
 
     log_output.write('# orphan edges' + '\n')
     for edges in list([G.edges(component) for component in networkx.connected_components(G.to_undirected()) if len(G.edges(component)) > 0]):
-        # display_names = list(map(lambda x: (G.node[x[0]]['label'] if 'label' in G.node[x[0]] else x[0], G.node[x[1]]['label'] if 'label' in G.node[x[1]] else x[1]), list(edges)))
         log_output.write(str(edges) + '\n')
         filtered_graph.add_edges_from(edges)
 
@@ -126,16 +135,6 @@ def main():
                         ret = run(tmp_output_file, args.output, log_file, args)
     if not ret:
         sys.exit(1)
-    return True
-
-
-def demangle(input_file_object, output_file_object, verbose=True):
-    args = ['c++filt', '-n']
-    pipe = subprocess.Popen(args, stdin=input_file_object, stdout=output_file_object)
-    _, errs = pipe.communicate()
-    if errs:
-        print("[log] c++filt demangle failed: {}".format(errs), file=sys.stderr)
-        return False
     return True
 
 
