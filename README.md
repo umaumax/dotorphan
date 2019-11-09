@@ -44,9 +44,12 @@ pip3 install networkx
 sudo apt-get install -y graphviz libgraphviz-dev
 ```
 
+for gui
 ```
 pip3 install pygraphviz
 ```
+
+* `c++filt` for c++ symbol demangling
 
 ## examples
 ```

@@ -56,9 +56,9 @@ def run(input, output, log_output, args):
         return False
 
     log_output.write('# orphan nodes' + '\n')
-    for name in list([k for k, v in G.degree() if v == 0]):
-        log_output.write(name)
-        filtered_graph.add_node(G.node[name])
+    for node in list([n for n, v in G.degree() if v == 0]):
+        log_output.write(node)
+        filtered_graph.add_node(node)
 
     log_output.write('# orphan edges' + '\n')
     for edges in list([G.edges(component) for component in networkx.connected_components(G.to_undirected()) if len(G.edges(component)) > 0]):
