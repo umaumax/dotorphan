@@ -62,6 +62,17 @@ opt -analyze -dot-callgraph  all.bc && command mv callgraph.dot  all.dot
 
 dot -T svg -o main.svg <(cat main.dot | c++filt -n)
 dot -T svg -o all.svg  <(cat  all.dot | c++filt -n)
+
+dotorphan --orphan-info-json-output output.json all.dot
+cat output.json | jq -r "(.node_list[])"
+cat output.json | jq -r "(.nodes_list[])"
+cat output.json | jq -r "(.root_node_list[])"
+cat output.json | jq -r "(.root_nodes_list[])"
+
+dotorphan --orphan-info-json-output out.json --remove-traversed "^main\$" "^std::__1" "^llvm" "^__" --regex --split-output --output callgraph.filtered.dot callgraph.dot
+dot -Tsvg -ocallgraph.filtered.svg callgraph.filtered.dot
+dot -Tsvg -ocallgraph.filtered_edge.svg callgraph.filtered_edge.dot
+dot -Tsvg -ocallgraph.filtered_node.svg callgraph.filtered_node.dot
 ```
 
 ## bugs
