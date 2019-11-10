@@ -47,6 +47,7 @@ def remove_nodes(graph, node_names, verbose=True):
 
 
 def remove_traversed_nodes_regex(graph, node_patterns, verbose=True):
+    detected_node_names = []
     for node_pattern in node_patterns:
         matcher = re.compile(node_pattern)
         for node in list([n for n in graph.nodes() if matcher.search(n)]):
@@ -54,16 +55,18 @@ def remove_traversed_nodes_regex(graph, node_patterns, verbose=True):
                 "[remove_traversed_nodes_regex]"
                 " match {} by '{}' regex pattern".format(
                     node, node_pattern), file=sys.stderr)
-            graph.remove_nodes_from(list(set([element for tuple in list(
-                networkx.edge_dfs(graph, [str(node)])) for element in tuple])))
+            detected_node_names.append(str(node))
+    # NOTE: remove nodes after detection
+    graph.remove_nodes_from(list(set([element for tuple in list(
+        networkx.edge_dfs(graph, detected_node_names)) for element in tuple]+detected_node_names)))
     return True
 
 
 def remove_traversed_nodes(graph, node_names, verbose=True):
+    detected_node_names = []
     for node_name in node_names:
         if graph.has_node(node_name):
-            graph.remove_nodes_from(list(set([element for tuple in list(
-                networkx.edge_dfs(graph, [node_name])) for element in tuple])))
+            detected_node_names.append(node_name)
         else:
             if verbose:
                 print(
@@ -71,6 +74,9 @@ def remove_traversed_nodes(graph, node_names, verbose=True):
                         node_name),
                     file=sys.stderr)
             return False
+    # NOTE: remove nodes after detection
+    graph.remove_nodes_from(list(set([element for tuple in list(
+        networkx.edge_dfs(graph, detected_node_names)) for element in tuple]+detected_node_names)))
     return True
 
 
