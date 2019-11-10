@@ -90,7 +90,7 @@ def run(input, output, orphan_info_output, args):
     G = networkx.DiGraph(networkx.drawing.nx_pydot.read_dot(input))
     if args.relabel:
         G = networkx.relabel_nodes(
-            G, lambda x: G.node[x]['label'] if 'label' in G.node[x] else x)
+            G, lambda x: str(G.node[x]['label']).strip(args.relabel_strip_chars) if 'label' in G.node[x] else x)
 
     print("# [log] remove_traversed_nodes", file=sys.stderr)
     ret = remove_traversed_nodes_regex(
@@ -161,6 +161,11 @@ def main():
         action='store_false',
         help='relabel node name by label attr')
     parser.add_argument(
+        '--relabel-strip-chars',
+        default='{}"',
+        type=str,
+        help='relabel strip chars')
+    parser.add_argument(
         '--regex',
         action='store_true',
         help='enable regex of --remove-traversed')
@@ -175,13 +180,13 @@ def main():
         help='graph drawing prog (neato, dot, twopi, circo, fdp, nop, wc, acyclic, gvpr, gvcolor, ccomps, sccmap, tred, sfdp, unflatten)')
     parser.add_argument(
         '--remove',
-        default=['"{external node}"'],
+        default=['external node'],
         type=str,
         nargs='*',
         help='remove node names')
     parser.add_argument(
         '--remove-traversed',
-        default=['"{main}"'],
+        default=['main'],
         type=str,
         nargs='*',
         help='remove nodes traversed from these node names')
