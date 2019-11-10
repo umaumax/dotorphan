@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import re
 import subprocess
 import sys
@@ -103,11 +104,18 @@ def run(input, output, orphan_info_output, args):
     if not ret:
         return False
 
+    orphan_info = {
+        'node_list': [],
+        'nodes_list': [],
+        'root_node_list': [],
+        'root_nodes_list': [],
+    }
     orphan_info_output.write('# orphan nodes' + '\n')
     orphan_info_output.flush()
     for node in list([n for n, v in G.degree() if v == 0]):
         orphan_info_output.write(node+'\n')
         filtered_graph.add_node(node)
+        orphan_info['node_list'].append(node)
     orphan_info_output.flush()
 
     orphan_info_output.write('# orphan edges' + '\n')
@@ -116,32 +124,43 @@ def run(input, output, orphan_info_output, args):
             G.to_undirected()) if len(G.edges(component)) > 0]):
         orphan_info_output.write(str(edges) + '\n')
         filtered_graph.add_edges_from(edges)
+        unique_nodes = uniq_nodes_from_edges_list(None, edges)
+        orphan_info['nodes_list'].append(unique_nodes)
     orphan_info_output.flush()
 
     # NOTE: get root nodes
     orphan_info_output.write('# orphan root nodes' + '\n')
-    orphan_info_output.write(
-        str([n for n, d in filtered_graph.in_degree() if d == 0]) + '\n')
+    root_nodes = [n for n, d in filtered_graph.in_degree() if d == 0]
+    orphan_info_output.write(str(root_nodes) + '\n')
+    orphan_info['root_node_list'].append(root_nodes)
     orphan_info_output.flush()
 
     cnt = 0
     orphan_info_output.write('# orphan edges from root node' + '\n')
     orphan_info_output.flush()
-    for node in [n for n, d in filtered_graph.in_degree() if d == 0]:
+    for node in root_nodes:
         # NOTE: root node color setting
         filtered_graph.node[node]['fillcolor'] = 'darkorange'
         filtered_graph.node[node]['style'] = 'filled'
         unique_nodes = uniq_nodes_from_edges_list(
             node, networkx.edge_dfs(filtered_graph, [node]))
         orphan_info_output.write('[{}]{}\n'.format(cnt, str(unique_nodes)))
+        orphan_info['root_nodes_list'].append(unique_nodes)
         cnt += 1
     orphan_info_output.flush()
 
+    print("# [log] json output:",
+          args.orphan_info_json_output, file=sys.stderr)
+    with open(args.orphan_info_json_output, 'w') as f:
+        json.dump(orphan_info, f, ensure_ascii=False, indent=2)
+
     if output:
+        print("# [log] file output", file=sys.stderr)
         pygraphviz_module_assert()
         agrpah = networkx.nx_agraph.to_agraph(filtered_graph)
         agrpah.draw(output, prog=args.agrpah_prog)
     if args.gui:
+        print("# [log] gui output", file=sys.stderr)
         pygraphviz_module_assert()
         if not networkx.is_empty(filtered_graph):
             networkx.nx_agraph.view_pygraphviz(
@@ -201,6 +220,11 @@ def main():
         default='/dev/stdout',
         type=str,
         help='orphan info output filepath')
+    parser.add_argument(
+        '--orphan-info-json-output',
+        default='/dev/stdout',
+        type=str,
+        help='orphan info json output filepath')
     parser.add_argument('input',
                         type=str, help='input dot file')
 
