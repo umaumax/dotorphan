@@ -15,7 +15,7 @@ wget https://raw.githubusercontent.com/umaumax/dotorphan/master/_dotorphan -O /u
 ## how to run
 
 ```
-$ dotorphan sample.dot --exclude n n8 -o out.svg
+$ dotorphan sample.dot --remove-traversed n n8 -o out.svg
 # all orphan nodes
 n9
 # all orphan edges
