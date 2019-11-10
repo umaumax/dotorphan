@@ -54,7 +54,7 @@ def remove_traversed_nodes_regex(graph, node_patterns, verbose=True):
                 " match {} by '{}' regex pattern".format(
                     node, node_pattern), file=sys.stderr)
             graph.remove_nodes_from(list(set([element for tuple in list(
-                networkx.edge_bfs(graph, [str(node)])) for element in tuple])))
+                networkx.edge_dfs(graph, [str(node)])) for element in tuple])))
     return True
 
 
@@ -62,7 +62,7 @@ def remove_traversed_nodes(graph, node_names, verbose=True):
     for node_name in node_names:
         if graph.has_node(node_name):
             graph.remove_nodes_from(list(set([element for tuple in list(
-                networkx.edge_bfs(graph, [node_name])) for element in tuple])))
+                networkx.edge_dfs(graph, [node_name])) for element in tuple])))
         else:
             if verbose:
                 print(
@@ -113,7 +113,7 @@ def run(input, output, log_output, args):
         filtered_graph.node[node]['fillcolor'] = 'darkorange'
         filtered_graph.node[node]['style'] = 'filled'
         duplicated_nodes = list([element for tupl in list(
-            networkx.edge_bfs(filtered_graph, [node])) for element in tupl])
+            networkx.edge_dfs(filtered_graph, [node])) for element in tupl])
         unique_nodes = [node]  # for orphan root node (without edges)
         [unique_nodes.append(item)
          for item in duplicated_nodes if item not in unique_nodes]
