@@ -12,6 +12,7 @@ _arguments -s -S \
   "--help[show this help message and exit]:" \
   "--demangle[demangle c++ symbol (default: True)]" \
   "--relabel[relabel node name by label attr (default: True)]" \
+  "--relabel-strip-chars[relabel strip chars (default: {}\")]" \
   "--regex[enable regex of --remove-traversed (default: False)]:" \
   "--gui[show graph (requires: pygraphviz) (default: False)]:" \
   "--agrpah-prog[graph drawing prog (neato, dot, twopi, circo, fdp, nop, wc, acyclic, gvpr, gvcolor, ccomps, sccmap, tred, sfdp, unflatten) (default: dot)]::AGRPAH_PROG:->progs" \
@@ -19,7 +20,8 @@ _arguments -s -S \
   "--remove-traversed[remove nodes traversed from these node names (default: \['\"{main}\"'\])]::REMOVE_TRAVERSED:_files" \
   "--output[output filepath (dot, svg, png, pdf, ...) (default: )]::OUTPUT:_files" \
   "-o[output filepath (dot, svg, png, pdf, ...) (default: )]::OUTPUT:_files" \
-  "--log-output[log output filepath (default: /dev/stdout)]::LOG_OUTPUT:_files" \
+  "--orphan-info-output[orphan info output filepath (default: /dev/stdout)]::ORPHAN_INFO_OUTPUT:_files" \
+  "--orphan-info-json-output[orphan info json output filepath (default: /dev/stdout)]::ORPHAN_INFO_JSON_OUTPUT:_files" \
   "*::input file:_files"
 
 case $state in
