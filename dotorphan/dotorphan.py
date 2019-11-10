@@ -221,7 +221,7 @@ def main():
     parser.add_argument(
         '--regex',
         action='store_true',
-        help='enable regex of --remove-traversed')
+        help="enable regex of --remove-traversed e.g. '^main$'")
     parser.add_argument(
         '--gui',
         action='store_true',
