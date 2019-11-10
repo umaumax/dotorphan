@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import json
+import os
+import os.path
 import re
 import subprocess
 import sys
@@ -90,8 +92,9 @@ def uniq_nodes_from_edges_list(head_node, edges_list):
     return unique_nodes
 
 
-def run(input, output, orphan_info_output, args):
-    filtered_graph = networkx.DiGraph()
+def run(input, output_filepath, orphan_info_output, args):
+    filtered_node_graph = networkx.DiGraph()
+    filtered_edge_graph = networkx.DiGraph()
     # NOTE: input type: filename or file object
     print("# [log] parse file", file=sys.stderr)
     G = networkx.DiGraph(networkx.drawing.nx_pydot.read_dot(input))
@@ -120,7 +123,7 @@ def run(input, output, orphan_info_output, args):
     orphan_info_output.flush()
     for node in list([n for n, v in G.degree() if v == 0]):
         orphan_info_output.write(node+'\n')
-        filtered_graph.add_node(node)
+        filtered_node_graph.add_node(node)
         orphan_info['node_list'].append(node)
     orphan_info_output.flush()
 
@@ -129,27 +132,34 @@ def run(input, output, orphan_info_output, args):
     for edges in list([G.edges(component) for component in networkx.connected_components(
             G.to_undirected()) if len(G.edges(component)) > 0]):
         orphan_info_output.write(str(edges) + '\n')
-        filtered_graph.add_edges_from(edges)
+        filtered_edge_graph.add_edges_from(edges)
         unique_nodes = uniq_nodes_from_edges_list(None, edges)
         orphan_info['nodes_list'].append(unique_nodes)
     orphan_info_output.flush()
 
     # NOTE: get root nodes
     orphan_info_output.write('# orphan root nodes' + '\n')
-    root_nodes = [n for n, d in filtered_graph.in_degree() if d == 0]
+    root_nodes = [n for n, d in G.in_degree() if d == 0]
     orphan_info_output.write(str(root_nodes) + '\n')
-    orphan_info['root_node_list'].append(root_nodes)
+    orphan_info['root_node_list'].extend(root_nodes)
     orphan_info_output.flush()
+
+    def set_root_node_style(node):
+        node['fillcolor'] = 'darkorange'
+        node['style'] = 'filled'
 
     cnt = 0
     orphan_info_output.write('# orphan edges from root node' + '\n')
     orphan_info_output.flush()
     for node in root_nodes:
-        # NOTE: root node color setting
-        filtered_graph.node[node]['fillcolor'] = 'darkorange'
-        filtered_graph.node[node]['style'] = 'filled'
-        unique_nodes = uniq_nodes_from_edges_list(
-            node, networkx.edge_dfs(filtered_graph, [node]))
+        unique_nodes = []
+        if filtered_node_graph.has_node(node):
+            set_root_node_style(filtered_node_graph.node[node])
+            unique_nodes = [node]
+        if filtered_edge_graph.has_node(node):
+            set_root_node_style(filtered_edge_graph.node[node])
+            unique_nodes = uniq_nodes_from_edges_list(
+                node, networkx.edge_dfs(filtered_edge_graph, [node]))
         orphan_info_output.write('[{}]{}\n'.format(cnt, str(unique_nodes)))
         orphan_info['root_nodes_list'].append(unique_nodes)
         cnt += 1
@@ -160,17 +170,33 @@ def run(input, output, orphan_info_output, args):
     with open(args.orphan_info_json_output, 'w') as f:
         json.dump(orphan_info, f, ensure_ascii=False, indent=2)
 
-    if output:
+    # get all nodes & edges of both graphs, including attributes
+    # where the attributes conflict, it uses the attributes of 2nd graph
+    filtered_combined_graph = networkx.compose(
+        filtered_node_graph, filtered_edge_graph)
+
+    def insert_key_before_filepath(filepath, key):
+        return "{0}_{2}{1}".format(*os.path.splitext(filepath) + (key,))
+
+    if output_filepath:
         print("# [log] file output", file=sys.stderr)
         pygraphviz_module_assert()
-        agrpah = networkx.nx_agraph.to_agraph(filtered_graph)
-        agrpah.draw(output, prog=args.agrpah_prog)
+        agrpah = networkx.nx_agraph.to_agraph(filtered_combined_graph)
+        agrpah.draw(output_filepath, prog=args.agrpah_prog)
+        if args.split_output:
+            print("# [log] gen splited file", file=sys.stderr)
+            agrpah = networkx.nx_agraph.to_agraph(filtered_node_graph)
+            agrpah.draw(insert_key_before_filepath(
+                output_filepath, 'node'), prog=args.agrpah_prog)
+            agrpah = networkx.nx_agraph.to_agraph(filtered_edge_graph)
+            agrpah.draw(insert_key_before_filepath(
+                output_filepath, 'edge'), prog=args.agrpah_prog)
     if args.gui:
         print("# [log] gui output", file=sys.stderr)
         pygraphviz_module_assert()
-        if not networkx.is_empty(filtered_graph):
+        if not networkx.is_empty(filtered_combined_graph):
             networkx.nx_agraph.view_pygraphviz(
-                filtered_graph, prog=args.agrpah_prog)
+                filtered_combined_graph, prog=args.agrpah_prog)
         else:
             print("# [log] filtered graph is empty", file=sys.stderr)
     return True
@@ -217,6 +243,10 @@ def main():
         type=str,
         nargs='*',
         help='remove nodes traversed from these node names')
+    parser.add_argument(
+        '--split-output',
+        action='store_true',
+        help='split output file to (combined, node, edge)')
     parser.add_argument(
         '-o',
         '--output',
