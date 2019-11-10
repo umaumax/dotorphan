@@ -73,52 +73,69 @@ def remove_traversed_nodes(graph, node_names, verbose=True):
     return True
 
 
-def run(input, output, log_output, args):
+def uniq_nodes_from_edges_list(head_node, edges_list):
+    duplicated_nodes = list(
+        [element for tupl in list(edges_list) for element in tupl])
+    # for orphan root node (without edges)
+    unique_nodes = [head_node] if head_node else []
+    [unique_nodes.append(item)
+     for item in duplicated_nodes if item not in unique_nodes]
+    return unique_nodes
+
+
+def run(input, output, orphan_info_output, args):
     filtered_graph = networkx.DiGraph()
     # NOTE: input type: filename or file object
+    print("# [log] parse file", file=sys.stderr)
     G = networkx.DiGraph(networkx.drawing.nx_pydot.read_dot(input))
     if args.relabel:
         G = networkx.relabel_nodes(
             G, lambda x: G.node[x]['label'] if 'label' in G.node[x] else x)
 
+    print("# [log] remove_traversed_nodes", file=sys.stderr)
     ret = remove_traversed_nodes_regex(
         G, args.remove_traversed) if args.regex else remove_traversed_nodes(
         G, args.remove_traversed)
     if not ret:
         return False
+    print("# [log] remove_nodes", file=sys.stderr)
     ret = remove_nodes(G, args.remove)
     if not ret:
         return False
 
-    log_output.write('# orphan nodes' + '\n')
+    orphan_info_output.write('# orphan nodes' + '\n')
+    orphan_info_output.flush()
     for node in list([n for n, v in G.degree() if v == 0]):
-        log_output.write(node)
+        orphan_info_output.write(node+'\n')
         filtered_graph.add_node(node)
+    orphan_info_output.flush()
 
-    log_output.write('# orphan edges' + '\n')
+    orphan_info_output.write('# orphan edges' + '\n')
+    orphan_info_output.flush()
     for edges in list([G.edges(component) for component in networkx.connected_components(
             G.to_undirected()) if len(G.edges(component)) > 0]):
-        log_output.write(str(edges) + '\n')
+        orphan_info_output.write(str(edges) + '\n')
         filtered_graph.add_edges_from(edges)
+    orphan_info_output.flush()
 
     # NOTE: get root nodes
-    log_output.write('# orphan root nodes' + '\n')
-    log_output.write(
+    orphan_info_output.write('# orphan root nodes' + '\n')
+    orphan_info_output.write(
         str([n for n, d in filtered_graph.in_degree() if d == 0]) + '\n')
+    orphan_info_output.flush()
 
     cnt = 0
-    log_output.write('# orphan edges from root node' + '\n')
+    orphan_info_output.write('# orphan edges from root node' + '\n')
+    orphan_info_output.flush()
     for node in [n for n, d in filtered_graph.in_degree() if d == 0]:
         # NOTE: root node color setting
         filtered_graph.node[node]['fillcolor'] = 'darkorange'
         filtered_graph.node[node]['style'] = 'filled'
-        duplicated_nodes = list([element for tupl in list(
-            networkx.edge_dfs(filtered_graph, [node])) for element in tupl])
-        unique_nodes = [node]  # for orphan root node (without edges)
-        [unique_nodes.append(item)
-         for item in duplicated_nodes if item not in unique_nodes]
-        log_output.write('[{}]{}\n'.format(cnt, str(unique_nodes)))
+        unique_nodes = uniq_nodes_from_edges_list(
+            node, networkx.edge_dfs(filtered_graph, [node]))
+        orphan_info_output.write('[{}]{}\n'.format(cnt, str(unique_nodes)))
         cnt += 1
+    orphan_info_output.flush()
 
     if output:
         pygraphviz_module_assert()
@@ -175,10 +192,10 @@ def main():
         type=str,
         help='output filepath (dot, svg, png, pdf, ...)')
     parser.add_argument(
-        '--log-output',
+        '--orphan-info-output',
         default='/dev/stdout',
         type=str,
-        help='log output filepath')
+        help='orphan info output filepath')
     parser.add_argument('input',
                         type=str, help='input dot file')
 
@@ -189,16 +206,17 @@ def main():
         sys.exit(1)
 
     ret = True
-    with open(args.log_output, 'w') as log_file:
+    with open(args.orphan_info_output, 'w') as orphan_info_file:
         if not args.demangle:
-            ret = run(args.input, args.output, log_file, args)
+            ret = run(args.input, args.output, orphan_info_file, args)
         else:
             with open(args.input, 'r') as input_file, \
                     tempfile.TemporaryFile(mode='w+') as tmp_output_file:
                 ret = demangle(input_file, tmp_output_file)
                 if ret:
                     tmp_output_file.seek(0)
-                    ret = run(tmp_output_file, args.output, log_file, args)
+                    ret = run(tmp_output_file, args.output,
+                              orphan_info_file, args)
     if not ret:
         sys.exit(1)
     return True
