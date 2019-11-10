@@ -179,8 +179,10 @@ def run(input, output, orphan_info_output, args):
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--demangle',
-                        action='store_false', help='demangle c++ symbol')
+    parser.add_argument(
+        '--no-demangle',
+        action='store_true',
+        help='without demangle c++ symbol')
     parser.add_argument(
         '--relabel',
         action='store_false',
@@ -242,7 +244,7 @@ def main():
 
     ret = True
     with open(args.orphan_info_output, 'w') as orphan_info_file:
-        if not args.demangle:
+        if args.no_demangle:
             ret = run(args.input, args.output, orphan_info_file, args)
         else:
             with open(args.input, 'r') as input_file, \
