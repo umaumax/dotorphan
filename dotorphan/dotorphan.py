@@ -145,7 +145,7 @@ def run(input, output_filepath, orphan_info_output, args):
     orphan_info_output.flush()
 
     def set_root_node_style(node):
-        node['fillcolor'] = 'darkorange'
+        node['fillcolor'] = 'lightgreen'
         node['style'] = 'filled'
 
     cnt = 0
