@@ -100,7 +100,7 @@ def run(input, output_filepath, orphan_info_output, args):
     G = networkx.DiGraph(networkx.drawing.nx_pydot.read_dot(input))
     if args.relabel:
         G = networkx.relabel_nodes(
-            G, lambda x: str(G.node[x]['label']).strip(args.relabel_strip_chars) if 'label' in G.node[x] else x)
+            G, lambda x: str(G.nodes[x]['label']).strip(args.relabel_strip_chars) if 'label' in G.nodes[x] else x)
 
     print("# [log] remove_traversed_nodes", file=sys.stderr)
     ret = remove_traversed_nodes_regex(
@@ -154,10 +154,10 @@ def run(input, output_filepath, orphan_info_output, args):
     for node in root_nodes:
         unique_nodes = []
         if filtered_node_graph.has_node(node):
-            set_root_node_style(filtered_node_graph.node[node])
+            set_root_node_style(filtered_node_graph.nodes[node])
             unique_nodes = [node]
         if filtered_edge_graph.has_node(node):
-            set_root_node_style(filtered_edge_graph.node[node])
+            set_root_node_style(filtered_edge_graph.nodes[node])
             unique_nodes = uniq_nodes_from_edges_list(
                 node, networkx.edge_dfs(filtered_edge_graph, [node]))
         orphan_info_output.write('[{}]{}\n'.format(cnt, str(unique_nodes)))
