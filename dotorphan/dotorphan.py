@@ -187,13 +187,16 @@ def run(input, output_filepath, orphan_info_output, args):
         print("# [log] file output", file=sys.stderr)
         pygraphviz_module_assert()
         agrpah = networkx.nx_agraph.to_agraph(filtered_combined_graph)
+        agrpah.graph_attr.update(ranksep='5.0')
         agrpah.draw(output_filepath, prog=args.agrpah_prog)
         if args.split_output:
             print("# [log] gen splited file", file=sys.stderr)
             agrpah = networkx.nx_agraph.to_agraph(filtered_node_graph)
+            agrpah.graph_attr.update(ranksep='5.0')
             agrpah.draw(insert_key_before_filepath(
                 output_filepath, 'node'), prog=args.agrpah_prog)
             agrpah = networkx.nx_agraph.to_agraph(filtered_edge_graph)
+            agrpah.graph_attr.update(ranksep='5.0')
             agrpah.draw(insert_key_before_filepath(
                 output_filepath, 'edge'), prog=args.agrpah_prog)
     if args.gui:
