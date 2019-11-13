@@ -170,6 +170,11 @@ def run(input, output_filepath, orphan_info_output, args):
     with open(args.orphan_info_json_output, 'w') as f:
         json.dump(orphan_info, f, ensure_ascii=False, indent=2)
 
+    for _, attrs in filtered_node_graph.nodes(data=True):
+        attrs['shape'] = 'box'
+    for _, attrs in filtered_edge_graph.nodes(data=True):
+        attrs['shape'] = 'box'
+
     # get all nodes & edges of both graphs, including attributes
     # where the attributes conflict, it uses the attributes of 2nd graph
     filtered_combined_graph = networkx.compose(
