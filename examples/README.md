@@ -24,7 +24,10 @@ IBM blog: [Two identical constructors emitted? That’s not a bug\! \(C/C\+\+ co
 つまり，コールグラフの作成用途としては，aliasを強制的に変換し，`opt`コマンドで名前を拾えるように変換した後に，demangleすることで，共通のシンボル名に変換した後に，描画するというステップは正しい
 
 ```
+# for pipe
 perl -pe 's/^(@[_0-9a-zA-Z]+) = alias ([_0-9a-zA-Z]+) \(.+?\), [_0-9a-zA-Z]+ (\(.+?\))\* @[_0-9a-zA-Z]+$/declare $2 $1$3/'
+# for overwrite mode
+perl -i -pe 's/^(@[_0-9a-zA-Z]+) = alias ([_0-9a-zA-Z]+) \(.+?\), [_0-9a-zA-Z]+ (\(.+?\))\* @[_0-9a-zA-Z]+$/declare $2 $1$3/' "$FILENAME"
 ```
 
 input
