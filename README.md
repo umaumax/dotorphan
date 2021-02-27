@@ -1,20 +1,20 @@
 # dotorphan
 
 ## how to install
-```
+``` bash
 # for avoiding 'pip Installing collected packages: UNKNOWN'
 pip3 install setuptools --upgrade
 pip3 install https://github.com/umaumax/dotorphan/archive/master.tar.gz
 ```
 
 for zsh completion
-```
+``` bash
 wget https://raw.githubusercontent.com/umaumax/dotorphan/master/_dotorphan -O /usr/local/share/zsh/site-functions
 ```
 
 ## how to run
 
-```
+``` bash
 $ dotorphan sample.dot --remove-traversed n n8 -o out.svg
 # all orphan nodes
 n9
@@ -33,11 +33,11 @@ n9
 ![ouput dot svg]( ./examples/out.svg )
 
 ## requires
-```
+``` bash
 pip3 install networkx
 ```
 
-```
+``` bash
 # darwin
 ?
 # ubuntu
@@ -45,14 +45,14 @@ sudo apt-get install -y graphviz libgraphviz-dev
 ```
 
 for gui
-```
+``` bash
 pip3 install pygraphviz
 ```
 
 * `c++filt` for c++ symbol demangling
 
 ## examples
-```
+``` bash
 clang++ -emit-llvm main.cpp -c -o main.bc
 clang++ -emit-llvm sub.cpp -c -o sub.bc
 llvm-link main.bc sub.bc -o all.bc
